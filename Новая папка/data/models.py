@@ -23,8 +23,8 @@ db = SQLALCHEMy(model_class=Base, engine_options=dict(echo=True))
 user_your_assoc = Table(
     "user_tour_assoc",
     Base.metadata,
-    Column("user_id", ForeignKey("users_id"), primary_key=True)
-    Column("tour_id", ForeignKey("tours_id"), primary_key=True)
+    Column("user_id", ForeignKey("users_id", ondelate="cascade"), primary_key=True)
+    Column("tour_id", ForeignKey("tours_id", ondelate="cascade"), primary_key=True)
 )
 
 
@@ -58,8 +58,9 @@ class User(db.Model, UserMixin):
     first_name: Mapped[str] = mapped_column(string(100), nullable=True)
     last_name: Mapped[str] = mapped_column(string(100), nullable=True)
     email: Mapped[str] = mapped_column(string(100), nullable=True,unique=True)
-    password: Mapped[str] = mapped_column(string())
+    _password: Mapped[str] = mapped_column(string())
     tours: Mapped[list[Tour]] = relationship(secondary=user_tour_assoc)
+    is_admin: Mapped[bool] = mapped_column(bool, default=False)
 
 
     @property

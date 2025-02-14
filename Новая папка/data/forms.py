@@ -9,13 +9,13 @@ class SignUpform(FlaskForm):
     last_name =  wtforms.StringField("введить свой фамилия")
     email = wtforms.EmailField("Email", validators=[wtforms.validators.Email(), wtforms.validators.data_required()])
     password = wtforms.PasswordField("введит парол",validators=[wtforms.validators.length(8)])
-
+    submit = wtforms.SubmitField("зарегистрироваться")
 
 
 class Loginform(FlaskForm):
     email = wtforms.EmailField("Email", validators=[wtforms.validators.Email(), wtforms.validators.data_required()])
     password = wtforms.PasswordField("введит парол",validators=[wtforms.validators.length(8)])
-
+    submit = wtforms.SubmitField("войти")
 
 
 
