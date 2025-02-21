@@ -13,6 +13,17 @@
           <div class="card-body">
             <h2 class="h5 card-title">{{ tour.title }}</h2>
             <p class="card-text">{{ tour.description }}</p>
+            {% extends "base.html" %}
+        {% block content %}
+        <h2>Кабинет</h2>
+        <p>Добро пожаловать, {{ current_user.first_name }}!</p>
+        <h3>Ваши туры:</h3>
+        <ul>
+                  {% for tour in current_user.tours %}
+                  <li>{{ tour.title }}</li>
+                {% endfor %}
+                </ul>
+              {% endblock %}
             <a href="{{ url_for('get_tour', tour_id=tour.id) }}" class="btn btn-sm btn-primary">Деталі туру</a>
           </div>
         </div>

@@ -1,148 +1,31 @@
-import os
-import binascii
-from flask import Flask, render_template, redirect, url_for, request, flash
-from dotenv import load_dotenv
-from flask_login import current_user, LoginManager, login_required, login_user, logout_user
-from data import data
-from data.forms import db, Tour, User
-from data.tours_to_db import data_to_db
-from data.forms import SignUpform, LoginForm
-from flask_migrate import Migrate
-from data.forms import SignUpForm, LoginForm
-load_dotenv()
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
-app = Flask(__name__)
-app.secret_key = binascii.hexlify(os.urandom(24))
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_URI")
-db.init_app(app)
-login_manager = LoginManager()
-login_manager.login_message = "для бронювання увійдіть в систему ахахахах"
-login_manager.login_view = "login"
-login_manager.init_app(app)
-migrate = Migrate(app, db)
+db = SQLAlchemy()
 
-with app.app_context():
-    db.create_all()
-    #data_to_db()
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    tours = db.relationship('Tour', secondary='user_tours', backref='users')
 
-@app.context_processor
-def global_data():
-    return dict(
-        title=data.title,
-        departures=data.departures
-    )
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
-@app.get("/")
-def index():
-    tours = Tour.query.all()
-    return render_template("index.html", tours=tours)
+    def is_validate_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
+class Tour(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    departure = db.Column(db.String(50), nullable=False)
+    price = db.Column(db.Integer, nullable=False)
 
-@app.get("/departure/<dep_eng>/")
-def get_tour(dep_eng):
-    tours = Tour.query.where(Tour.departure == dep_eng).all()
-    return render_template("departure.html", tours=tours, dep_eng=dep_eng)
-
-
-@app.get("/tour/<int:tour_id>")
-def get_tour(tour_id):
-    tour = db.one_or_404(Tour.query.where(Tour.id == tour_id))
-    return render_template("tour.html", tour=tour)
-
-@app.get("/buy_tour/<int:tour_id>/")
-@login_required
-def buy_tour(tour_id):
-    tour = db.one_or_404(Tour.query.where(Tour.id == tour_id))
-    current_user.tours.append(tour)
-    db.session.commit()
-    flash(f"ви купили тур '{tour.title}'. дякуемо", "success")
-    return redirect(url_for("cabinet"))
-
-
-@app.route("/signup/", methods=["GET", "POST"])
-def SignUpform():
-    signup_form = SignUpform()
-
-    if signup_form.validate_on_submit():
-        user = User(
-            first_name=signup_form.first_name.data,
-            last_name=signup_form.last_name.data,
-            email=signup_form.email.data,
-            password=signup_form.password.data
-        )
-        db.session.add(user)
-        db.session.commit()
-        flash("зарегистрирован твой бить")
-        return redirect(url_for("login"))
-
-    return render_template("signup.html", form=signup_form)
-
-
-@app.route("/login/", methods=["GET", "POST"])
-def login():
-    login_form = LoginForm()
-
-    if login_form.validate_on_submit():
-        email = login_form.email.data
-        password = login_form.password.data
-
-        user = User.query.where(User.email == email).first()
-        if user and user.is_validate_password(password):
-            login_user(user)
-            return redirect(url_for("cabinet"))
-        else:
-            flash("неверный логин или пароль")
-            flash("попробуйте еще раз")
-            return redirect(url_for("login"))
-        
-    return render_template("signup.html", form=login_form)
-
-
-@app.route("/cabinet/")
-@login_required
-def cabinet():
-    return render_template("cabinet.html")
-
-
-
-@app.route("/logout/")
-@login_required
-def logout():
-    logout_user()
-    flash("вы вышли из системы")
-    return redirect(url_for("index"))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
-
-
-
-
-
-
-
-
-
-
-
+user_tours = db.Table('user_tours',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('tour_id', db.Integer, db.ForeignKey('tour.id'), primary_key=True)
+)

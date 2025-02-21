@@ -1,31 +1,30 @@
-{% extends 'base.html' %}
-
-{% block <center></center> %}
-    <form action="{{url_for('signup')}}" method="post">
-        {{form.hidden_tag()}}
-        
-        <div class="form-group">
-           {{form.first_name.label(class="form-control-label")}}
-           {{form.first_name(class="form-control")}}
-        </div>
-        <div class="form-group">
-           {{form.last_name.label(class="form-control-label")}}
-           {{form.last_name(class="form-control")}}
-        </div>
-        <div class="form-group">
-           {{form.email.label(class="form-control-label")}}
-           {{form.email(class="form-control")}}
-        </div>
-        <div class="form-group">
-           {{form.password.label(class="form-control-label")}}
-           {{form.password(class="form-control")}}
-        </div>
-        <div class="form-group">
-           {{form.confirm_password.label(class="form-control-label")}}
-           {{form.confirm_password(class="form-control")}}
-        </div>
-        <div class="form-group">
-           {{form.submit(class="btn btn-primary")}}
-        </div>
-    </form>
-{% endblock center %}
+{% extends "base.html" %}
+{% block content %}
+<h2>Регистрация</h2>
+<form method="POST" action="{{ url_for('signup') }}">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.first_name.label }}
+        {{ form.first_name(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.last_name.label }}
+        {{ form.last_name(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.email.label }}
+        {{ form.email(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.password.label }}
+        {{ form.password(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.confirm_password.label }}
+        {{ form.confirm_password(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.submit(class="btn btn-primary") }}
+    </div>
+</form>
+{% endblock %}
